@@ -125,5 +125,8 @@ int main(int argc, char *argv[])
     return -4;
   }
 
+  command = "rm -rf ./" + tempFolderName;
+  execute(command, isVerbose);
+
   return 0;
 }
