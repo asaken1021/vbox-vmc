@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <random>
+#include <cstring>
 
 #include "shell_execute.h"
 
