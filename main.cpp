@@ -67,28 +67,62 @@ int main(int argc, char *argv[])
 
   // cout << "vmCount=" << vmCount << ", vmNameReadCount=" << vmNameReadCount << endl;
 
-  cout << "VM List -----" << endl;
+  cout << endl
+       << "--- 仮想マシン一覧 ----------" << endl;
   for (int x = 0; x < vmCount; x++)
   {
     cout << "[" << x << "] " << vmNames[x] << endl;
   }
-  cout << "操作するVMを選択してください > " << flush;
+  cout << endl
+       << "操作するVMを選択してください > " << flush;
   cin >> selectedVMNumber;
+  if (cin.fail())
+  {
+    cerr << "入力が正しくありません。" << endl;
+    return -2;
+  }
 
   if (selectedVMNumber >= vmCount)
   {
     cerr << "そのようなVMはありません。" << endl;
+    return -3;
+  }
+
+  cout << endl
+       << "VMに対する操作を選択してください。" << endl
+       << "(通常起動: 1, ヘッドレス起動:2, リセット: 3, 強制終了: 4, ACPIシャットダウン: 5) > " << flush;
+  cin >> controlNumber;
+  if (cin.fail())
+  {
+    cerr << "入力が正しくありません。" << endl;
     return -2;
   }
 
-  cout << "VMに対する操作を選択してください。" << endl
-       << "(起動: 1, リセット: 2, 強制終了: 3, ACPIシャットダウン: 4) > " << flush;
-  cin >> controlNumber;
-
-  if (controlNumber > 4)
+  switch (controlNumber)
   {
-    cerr << "そのような操作はありません。" << endl;
-    return -3;
+  case 1:
+    command = "vboxmanage startvm '" + vmNames[selectedVMNumber] + "' --type gui";
+    execute(command, isVerbose);
+    break;
+  case 2:
+    command = "vboxmanage startvm '" + vmNames[selectedVMNumber] + "' --type headless";
+    execute(command, isVerbose);
+    break;
+  case 3:
+    command = "vboxmanage controlvm '" + vmNames[selectedVMNumber] + "' reset";
+    execute(command, isVerbose);
+    break;
+  case 4:
+    command = "vboxmanage controlvm '" + vmNames[selectedVMNumber] + "' poweroff";
+    execute(command, isVerbose);
+    break;
+  case 5:
+    command = "vboxmanage controlvm '" + vmNames[selectedVMNumber] + "' acpipowerbutton";
+    execute(command, isVerbose);
+    break;
+  default:
+    cerr << "そのような操作はありません。または、不明なエラーです。" << endl;
+    return -4;
   }
 
   return 0;
