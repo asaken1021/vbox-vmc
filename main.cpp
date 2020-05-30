@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <random>
 #include <cstring>
+#include <map>
 
 #include "shell_execute.h"
 
@@ -14,13 +15,17 @@ int main(int argc, char *argv[])
   mt19937 mt(rd());
   bool isVerbose = false;
   int vmCount = 0;
-  int vmNameReadCount = 0;
+  // int vmNameReadCount = 0;
   int selectedVMNumber = 0;
   int controlNumber = 0;
   string tempFolderName = "vbvmc_temp" + to_string(mt());
   string vmlistFileName = tempFolderName + "/vmlist.vbvmc";
   string vmnameFileName = tempFolderName + "/vmname.vbvmc";
+  string runningVMlistFileName = tempFolderName + "/running_vmlist.vbvmc";
+  string runningVMNameFileName = tempFolderName + "/running_vmname.vbvmc";
   string strcache = "";
+  map<int, string> vmlist;
+  map<string, bool> vmIsRunning;
 
   if (argc == 2)
   {
@@ -39,6 +44,12 @@ int main(int argc, char *argv[])
   command = "cat " + vmlistFileName + " | perl -lne 'if(/'\\\"'(.*)'\\\"'/) {print $1}' > " + vmnameFileName;
   execute(command, isVerbose);
 
+  command = "vboxmanage list runningvms > " + runningVMlistFileName;
+  execute(command, isVerbose);
+
+  command = "cat " + runningVMlistFileName + " | perl -lne 'if(/'\\\"'(.*)'\\\"'/) {print $1}' > " + runningVMNameFileName;
+  execute(command, isVerbose);
+
   ifstream vmnameFileStream(vmnameFileName);
 
   if (vmnameFileStream.fail())
@@ -47,32 +58,39 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  // cout << "^q^" << endl;
-
   while (getline(vmnameFileStream, strcache))
   {
-    // cout << strcache << endl;
+    vmlist[vmCount] = strcache;
+    vmIsRunning[strcache] = false;
+
     vmCount++;
   }
 
-  string vmNames[vmCount];
-
   vmnameFileStream.close();
-  vmnameFileStream.open(vmnameFileName);
+  vmnameFileStream.open(runningVMNameFileName);
 
   while (getline(vmnameFileStream, strcache))
   {
-    vmNames[vmNameReadCount] = strcache;
-    vmNameReadCount++;
+    vmIsRunning[strcache] = true;
   }
 
-  // cout << "vmCount=" << vmCount << ", vmNameReadCount=" << vmNameReadCount << endl;
+  vmnameFileStream.close();
+
+  cout << vmlist[0];
 
   cout << endl
        << "--- 仮想マシン一覧 ----------" << endl;
   for (int x = 0; x < vmCount; x++)
   {
-    cout << "[" << x << "] " << vmNames[x] << endl;
+    cout << "[" << x << "] " << vmlist[x];
+    if (vmIsRunning[vmlist[x]])
+    {
+      cout << " [実行中]" << endl;
+    }
+    else
+    {
+      cout << endl;
+    }
   }
   cout << endl
        << "操作するVMを選択してください > " << flush;
@@ -102,23 +120,23 @@ int main(int argc, char *argv[])
   switch (controlNumber)
   {
   case 1:
-    command = "vboxmanage startvm '" + vmNames[selectedVMNumber] + "' --type gui";
+    command = "vboxmanage startvm '" + vmlist[selectedVMNumber] + "' --type gui";
     execute(command, isVerbose);
     break;
   case 2:
-    command = "vboxmanage startvm '" + vmNames[selectedVMNumber] + "' --type headless";
+    command = "vboxmanage startvm '" + vmlist[selectedVMNumber] + "' --type headless";
     execute(command, isVerbose);
     break;
   case 3:
-    command = "vboxmanage controlvm '" + vmNames[selectedVMNumber] + "' reset";
+    command = "vboxmanage controlvm '" + vmlist[selectedVMNumber] + "' reset";
     execute(command, isVerbose);
     break;
   case 4:
-    command = "vboxmanage controlvm '" + vmNames[selectedVMNumber] + "' poweroff";
+    command = "vboxmanage controlvm '" + vmlist[selectedVMNumber] + "' poweroff";
     execute(command, isVerbose);
     break;
   case 5:
-    command = "vboxmanage controlvm '" + vmNames[selectedVMNumber] + "' acpipowerbutton";
+    command = "vboxmanage controlvm '" + vmlist[selectedVMNumber] + "' acpipowerbutton";
     execute(command, isVerbose);
     break;
   default:
