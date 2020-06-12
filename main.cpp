@@ -5,8 +5,7 @@
 #include <cstring>
 #include <map>
 
-#include "shell_execute.h"
-#include "remove_cache.h"
+#include "vbox_vmc.h"
 
 using namespace std;
 

@@ -13,3 +13,9 @@ int execute(string cmd, bool showCommand)
   system(cmd.c_str());
   return 0;
 }
+
+int remove_cache(string tempFolderName, bool isVerbose)
+{
+  execute("rm -rf ./" + tempFolderName, isVerbose);
+  return 0;
+}
