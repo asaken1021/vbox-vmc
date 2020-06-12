@@ -6,6 +6,7 @@
 #include <map>
 
 #include "shell_execute.h"
+#include "remove_cache.h"
 
 using namespace std;
 
@@ -55,6 +56,7 @@ int main(int argc, char *argv[])
   if (vmnameFileStream.fail())
   {
     cerr << "一時ファイルの読み取りに失敗しました。" << endl;
+    // remove_cache(tempFolderName, isVerbose);
     return -1;
   }
 
@@ -98,12 +100,14 @@ int main(int argc, char *argv[])
   if (cin.fail())
   {
     cerr << "入力が正しくありません。" << endl;
+    remove_cache(tempFolderName, isVerbose);
     return -2;
   }
 
   if (selectedVMNumber >= vmCount)
   {
     cerr << "そのようなVMはありません。" << endl;
+    remove_cache(tempFolderName, isVerbose);
     return -3;
   }
 
@@ -114,6 +118,7 @@ int main(int argc, char *argv[])
   if (cin.fail())
   {
     cerr << "入力が正しくありません。" << endl;
+    remove_cache(tempFolderName, isVerbose);
     return -2;
   }
 
@@ -141,11 +146,11 @@ int main(int argc, char *argv[])
     break;
   default:
     cerr << "そのような操作はありません。または、不明なエラーです。" << endl;
+    remove_cache(tempFolderName, isVerbose);
     return -4;
   }
 
-  command = "rm -rf ./" + tempFolderName;
-  execute(command, isVerbose);
+  remove_cache(tempFolderName, isVerbose);
 
   return 0;
 }
